@@ -21,8 +21,10 @@ set "HOME=%ROOT%/05_user/%USERNAME%"
 set "HOUDINI_DESK_PATH=&;C:/Users/%USERNAME%/Documents/houdini15.5/desktop"
 set "HOUDINI_TEMP_DIR=%HOME%/tmp"
 set "HOUDINI_BUFFERED_SAVE=1"
-set "MEGASCANS=%JOB%/20_assets/10_megascans/Megascans/"
+set "MEGASCANS=%JOB%/20_assets/megascans/Megascans/"
+set "MEGASCANS3D=%MEGASCANS%3d/"
 set "MEGASCANS=%MEGASCANS:\=/%"
+set "MEGASCANS3D=%MEGASCANS3D:\=/%"
 
 rem create temp dir for houdini user if it does not exist, also convert to forwardslashes
 set "TMP=%HOUDINI_TEMP_DIR%"
