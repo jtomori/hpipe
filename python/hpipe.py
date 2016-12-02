@@ -4,28 +4,28 @@ base for houdini pipeline
 created by Juraj Tomori
 '''
 
-import glob, os
+import glob, os, json
 import hou
-from itertools import cycle
-import numpy as np
 
-# shot name template: s010_shotName_fx_cloudSetup_v001.hipnc
-# asset name template: fx_cloudRig_v001.hipnc
+# shot name template: s010_shotName_fx_cloudSetup_jtomori_v001.hipnc
+# asset name template: fx_cloudRig_jtomori_v001.hipnc
 # initializes global variables in houdini session
 def initVars():
 	hipname = hou.getenv('HIPNAME')
 	if hipname != 'untitled':
 		attribs = hipname.split("_")
-		if len(attribs) == 5:
+		if len(attribs) == 6:
 			hou.putenv('SHOT', attribs[0])
 			hou.putenv('SHOTNAME', attribs[1])
 			hou.putenv('TASK', attribs[2])
 			hou.putenv('TASKNAME', attribs[3])
-			hou.putenv('VER', attribs[4])
-		elif len(attribs) == 3:
+			hou.putenv('USER', attribs[4])
+			hou.putenv('VER', attribs[5])
+		elif len(attribs) == 4:
 			hou.putenv('TASK', attribs[0])
 			hou.putenv('ASSET', attribs[1])
-			hou.putenv('VER', attribs[2])
+			hou.putenv('USER', attribs[2])
+			hou.putenv('VER', attribs[3])
 
 # splits versioning string into letter and number, e.g. v025 -> ['v','025']
 def verSplit(ver):
@@ -64,133 +64,129 @@ def flatten(A):
         else: rt.append(i)
     return rt
 
-# function for histogram digital asset
-def hist(node):
-    geo = node.geometry()
-    attrib = node.parm("attrib").eval()
-    res = node.parm("res").eval() + 1
-    norm = node.parm("norm").eval()
-    vec = node.parm("vec").eval()
-    precision = 1000000
-    entity = node.parm("entity").eval()
-        
-    # get list of attribute values and convert to numpy array
-    if entity == 0:
-        vals = geo.pointFloatAttribValues(attrib)
-    elif entity == 1:
-        vals = geo.primFloatAttribValues(attrib)
-    else:
-        myPath = node.path()
-        if not vec:
-            volumePrimId = hou.hscriptExpression('listbyvals("' + myPath + '", D_PRIMITIVE, "name", ' + attrib + ')')
-            volume = geo.prims()[int(volumePrimId)]
-            vals = volume.allVoxels()
-        else:
-            attribVec = attrib + '.x'
-            volumePrimIdX = hou.hscriptExpression('listbyvals("' + myPath + '", D_PRIMITIVE, "name", ' + attribVec + ')')
-            volumeX = geo.prims()[int(volumePrimIdX)]
-            attribVec = attrib + '.y'
-            volumePrimIdY = hou.hscriptExpression('listbyvals("' + myPath + '", D_PRIMITIVE, "name", ' + attribVec + ')')
-            volumeY = geo.prims()[int(volumePrimIdY)]
-            attribVec = attrib + '.z'
-            volumePrimIdZ = hou.hscriptExpression('listbyvals("' + myPath + '", D_PRIMITIVE, "name", ' + attribVec + ')')
-            volumeZ = geo.prims()[int(volumePrimIdZ)]
-            valsX = volumeX.allVoxels()
-            valsY = volumeY.allVoxels()
-            valsZ = volumeZ.allVoxels()
-            iters = [iter(valsX), iter(valsY), iter(valsZ)]
-            vals = list(it.next() for it in cycle(iters))
-            
-    if vec:
-        vals = list(vals)
-        vals = [vals[x:x+3] for x in xrange(0, len(vals), 3)]
-        valsLength = []
-        for i in vals:
-            valsLength.append( np.linalg.norm(i) )
-        vals = valsLength
-    valsNp = np.asarray(vals)
-    valsNp = np.round(valsNp, decimals=int(np.log10(precision)))
-    
-    # compute stats
-    min = np.amin(valsNp)
-    max = np.amax(valsNp)
-    avg = np.average(valsNp)
-    median = np.median(valsNp)
-    
-    # print to parameters
-    node.parm("stats1").set(min)
-    node.parm("stats2").set(max)
-    node.parm("stats3").set(avg)
-    node.parm("stats4").set(median)
-    
-    # compute, draw histogram
-    valsHistNp = np.histogram(valsNp, bins=res, density=True)[0]
-    
-    valsHistNpMax = np.amax(valsHistNp)
-    if norm:
-        valsHistNp /= valsHistNpMax
-    valsHist = tuple(valsHistNp)
-    valsHist = tuple([ float(int(valsHist[i]*precision)) / precision for i in xrange(len(valsHist))])
-    
-    keysHist = tuple(np.linspace(0,1,res))
-    keysHist = tuple([ float(int(keysHist[i]*precision)) / precision for i in xrange(len(keysHist))])
+# return list of folders inside specified folder
+def getFoldersPaths(path):
+	folders = [x[0] for x in os.walk(path)]
+	del folders[0]
+	return folders
 
-    basis = hou.rampBasis.Constant
-    histRamp = hou.Ramp( (basis, basis), keysHist, valsHist )    
-    node.parm("hist").set(histRamp)
+# return list of files matching mask inside specified folder
+def getFilesByMask(path, mask):
+	os.chdir(path)
+	lods = [file for file in glob.glob(mask)]
+	return lods
 
 class MegaLoad():
 	'''
 	class for handling Megascans assets
 	'''
+	megaPath = hou.getenv("MEGASCANS3D")
+	megaHierarchyFile = megaPath + "index.json"
 
-	# list available assets in megascans library, returns list formatted for houdini ordered menu, expects environment variable for path
-	@staticmethod
-	def megaAssetsList():
-	    megaPath = hou.getenv("MEGASCANS") + '3d/'
-	    assetsPaths = [x[0] for x in os.walk(megaPath)]
-	    del assetsPaths[0]
-	    assets = [x.split("/")[-1] for x in assetsPaths]        
-	    assetsList = [[assetsPaths[x], assets[x].replace("_", " ")] for x in xrange(len(assets))]
-	    assetsList = flatten(assetsList)
+	with open(megaHierarchyFile) as data:
+		assetsIndex = json.load(data)
 
-	    return assetsList
+	# writes dictionary with hierarchy of all megascan packs, assets their LODs
+	def buildHierarchy(self):
+		# returns True if asset and LOD are reversed
+		def checkReverse(packs, pack):
+			assetName = getFilesByMask(self.megaPath + packs[pack] + "/", "*.bgeo.sc")[0]
+			assetName = assetName.split(".")[0].split("_")[-1]
+			if assetName.isdigit():
+				correct = False
+			else:
+				correct = True
+			return correct
 
-	# list available LODs in megascans library, it checks menu selection and scans respective directory for available LODs, returns asset path and name
-	@staticmethod
-	def megaAssetsLodList():
-	    index = hou.pwd().parm("asset").eval()
-	    paths = hou.pwd().parm("asset").menuItems()
-	    path = paths[index]
-	    
-	    os.chdir(path)
-	    lods = [file for file in glob.glob("*.obj")]
-	    lods = [ [path + "/" + x, (x.split(".")[-2]).split("_")[-1]] for x in lods]
-	    lods = flatten(lods)
+		# returns list of assets in a pack
+		def getAssets(packs, pack):
+			assets = getFilesByMask(self.megaPath + packs[pack] + "/", "*.bgeo.sc")
+			if checkReverse(packs,  pack):
+				assets = [ asset.split(".")[0].split("_")[-2] for asset in assets ]
+			else:
+				assets = [ asset.split(".")[0].split("_")[-1] for asset in assets ]
+			assets = list(set(assets))
+			return assets
 
-	    return lods
+		# returns dictionary of LODs per asset in pack as keys and full paths as values
+		def getLods(packs, pack, assets, asset):
+			lods = getFilesByMask(self.megaPath + packs[pack] + "/", "*" + assets[asset] + "*" + "*.bgeo.sc")
+			if checkReverse(packs,  pack):
+				lods = { lod.split(".")[0].split("_")[-1] : packs[pack] + "/" + lod for lod in lods }
+			else:
+				lods = { lod.split(".")[0].split("_")[-2] : packs[pack] + "/" + lod for lod in lods }
+			return lods
+
+		packs = getFoldersPaths(self.megaPath)
+		packs = [x.split("/")[-1] for x in packs]
+
+		hierarchy = {}
+		for pack in xrange(len(packs)):
+			assets = getAssets(packs, pack)
+			assetDict = {}
+			for asset in xrange(len(assets)):
+				lods = getLods(packs, pack, assets, asset)
+				assetDict[assets[asset]] = lods
+			hierarchy[packs[pack]] = assetDict
+
+		with open(self.megaHierarchyFile, 'w') as out:
+			json.dump(hierarchy, out, indent = 1, sort_keys=True, ensure_ascii=False)
+
+	# finds packs based on idexed file, outputs houdini menu-style list
+	def packsList(self):
+	 	packs = [pack.encode("ascii") for pack in self.assetsIndex]
+		packs = [[packs[x], packs[x].replace("_", " ")] for x in xrange(len(packs))]
+		packs = flatten(packs)
+		return packs
+
+	# finds assets in pack based on idexed file, outputs houdini menu-style list
+	def assetsList(self):
+		index = hou.pwd().parm("pack").eval()
+		packs = hou.pwd().parm("pack").menuItems()
+		pack = packs[index]
+
+		assets = self.assetsIndex[pack].keys()
+		assets = [x.encode("ascii") for x in assets]
+		assets = [ [x,x] for x in assets]
+		assets = flatten(assets)
+		return assets
+
+	# finds LODs in asset in pack based on idexed file, outputs houdini menu-style list
+	def lodsList(self):
+		packsIndex = hou.pwd().parm("pack").eval()
+		packs = hou.pwd().parm("pack").menuItems()
+		pack = packs[packsIndex]
+
+		assetsIndex = hou.pwd().parm("asset").eval()
+		assets = hou.pwd().parm("asset").menuItems()
+		asset = assets[assetsIndex]
+
+		lods = self.assetsIndex[pack][asset].keys()
+		lods = [x.encode("ascii") for x in lods]
+		paths = [self.assetsIndex[pack][asset][lod].encode("ascii") for lod in lods]
+		lodsMenu = [ [ self.megaPath + paths[n] , lods[n] ] for n in xrange(len(lods))]
+		lodsMenu = flatten(lodsMenu)
+		return lodsMenu
 
 	# checks checkbox in asset, if set, it will rename current node by asset name and LOD, it should be bound to callback of a load button (which might by hidden)
-	@staticmethod
-	def autoRename(node):
+	def autoRename(self, node):
 	    currentName = node.name()
 	    enabled = node.evalParm("rename")
 	    
-	    labels = hou.pwd().parm("asset").menuLabels()
-	    index = hou.pwd().parm("asset").eval()
+	    packs = node.parm("pack").menuItems()
+	    pack = node.parm("pack").eval()
+	    assets = node.parm("asset").menuLabels()
+	    asset = node.parm("asset").eval()
+	    lods = node.parm("lod").menuLabels()
+	    lod = node.parm("lod").eval()
 	    
-	    lods = hou.pwd().parm("lod").menuLabels()
-	    lod = hou.pwd().parm("lod").eval()
-	    
-	    newName = labels[index]
-	    newName = newName.replace(" ","_") + "_" + lods[lod] + "_0"
+	    newName = packs[pack] + "_" + assets[asset] + "_" + lods[lod] + "_0"
 	    
 	    if enabled and (currentName != newName):
 	        node.setName(newName, unique_name=True)
 
 	# searches houdini project file for shaders which are prepared to work with megascans assets, if found, it modifies parameter values
-	@staticmethod	        
-	def getShaders(node):
+	def getShaders(self, node):
 	    restInstances = hou.nodeType(hou.shopNodeTypeCategory(), 'jt_megaShader').instances()
 	    lod0Instances = hou.nodeType(hou.shopNodeTypeCategory(), 'jt_megaShader_lod0').instances()
 	    
@@ -204,7 +200,3 @@ class MegaLoad():
 	    
 	    node.parm("rest").set(rest)
 	    node.parm("lod0").set(lod0)
-
-	@staticmethod
-	def testMethod(str):
-		print str
