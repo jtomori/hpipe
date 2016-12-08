@@ -6,10 +6,10 @@ call ../globals.bat
 
 rem set Houdini paths
 set "HOUDINI_VERSION=Houdini 15.5.632"
-rem set "HOUDINI_OTLSCAN_PATH=@/otls;%PIPELINE%/houdini/otls;&"
 rem set "HOUDINI_TOOLBAR_PATH=%PIPELINE%/houdini/toolbar;&"
 rem set "HOUDINI_SCRIPT_PATH=&;%PIPELINE%/houdini/scripts;"
 set "HOUDINI_PATH=&;%PIPELINE%/houdini"
+set "HOUDINI_OTLSCAN_PATH=&;%ROOT%/20_assets/otls"
 set "HOUDINI_SPLASH_FILE=%PIPELINE%/houdini/splash.jpg"
 set "HOUDINI_SPLASH_MESSAGE= | JELLY FISH | %HOUDINI_VERSION% | %USERNAME% |"
 set "JOB=%ROOT%"
