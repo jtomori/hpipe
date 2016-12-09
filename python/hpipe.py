@@ -26,6 +26,8 @@ def initVars():
 			hou.putenv('ASSET', attribs[1])
 			hou.putenv('USER', attribs[2])
 			hou.putenv('VER', attribs[3])
+		elif len(attribs) > 0:
+			hou.putenv('VER', attribs[-1])
 
 # splits versioning string into letter and number, e.g. v025 -> ['v','025']
 def verSplit(ver):
@@ -43,6 +45,7 @@ def saveInc():
 		newName[-1] = v + num
 		newNameStr = hou.getenv('HIP') + "/" + "_".join(newName) + "." + hou.getenv('HIPFILE').split(".")[-1]
 		hou.hipFile.save(newNameStr)
+		initVars()
 	else:
 		print "cannot increment version name in untitled.hip"
 
