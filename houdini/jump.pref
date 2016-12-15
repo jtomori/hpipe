@@ -3,5 +3,6 @@ $JOB/00_pipeline/houdini/otls/
 $JOB/05_user/
 $JOB/20_assets/
 $JOB/20_assets/hdr/
+$JOB/20_assets/otls/
 $JOB/30_shots/
 $JOB/40_render/
