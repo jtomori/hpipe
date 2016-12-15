@@ -12,4 +12,8 @@
   <tool name="crashRecovery" label="Crash Recovery" icon="$JOB/00_pipeline/houdini/icons/BUTTONS/undo.svg">
     <script scriptType="python"><![CDATA[hou.session.hpipe.crashRecovery()]]></script>
   </tool>
+
+  <tool name="tex_cache" label="clear cache" icon="$JOB/00_pipeline/houdini/icons/SHELF/clear_texture_cache.svg">
+    <script scriptType="hscript"><![CDATA[glcache -c]]></script>
+  </tool>
 </shelfDocument>

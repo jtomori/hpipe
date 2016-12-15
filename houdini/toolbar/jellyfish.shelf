@@ -8,5 +8,6 @@
   <toolshelf name="jellyfish" label="Jelly Fish">
     <memberTool name="saveInc"/>
     <memberTool name="crashRecovery"/>
+    <memberTool name="tex_cache"/>
   </toolshelf>
 </shelfDocument>
