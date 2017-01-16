@@ -9,5 +9,6 @@
     <memberTool name="saveInc"/>
     <memberTool name="crashRecovery"/>
     <memberTool name="tex_cache"/>
+    <memberTool name="rename"/>
   </toolshelf>
 </shelfDocument>

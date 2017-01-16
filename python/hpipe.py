@@ -79,6 +79,11 @@ def getFilesByMask(path, mask):
 	lods = [file for file in glob.glob(mask)]
 	return lods
 
+def batchRename(nodes):
+	prefix = hou.ui.readInput("name prefix:", buttons=("rename",), title="rename nodes")[1]
+	for i, node in enumerate(nodes):
+		node.setName(prefix + str(i), unique_name=True)
+
 class MegaLoad():
 	'''
 	class for handling Megascans assets

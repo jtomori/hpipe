@@ -16,4 +16,8 @@
   <tool name="tex_cache" label="clear cache" icon="$JOB/00_pipeline/houdini/icons/SHELF/clear_texture_cache.svg">
     <script scriptType="hscript"><![CDATA[glcache -c]]></script>
   </tool>
+
+  <tool name="rename" label="batch rename" icon="$JOB/00_pipeline/houdini/icons/VIEW/display_objectnames_name.svg">
+    <script scriptType="python"><![CDATA[hou.session.hpipe.batchRename(hou.selectedNodes())]]></script>
+  </tool>
 </shelfDocument>
