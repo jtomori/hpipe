@@ -81,8 +81,22 @@ def getFilesByMask(path, mask):
 
 def batchRename(nodes):
 	prefix = hou.ui.readInput("name prefix:", buttons=("rename",), title="rename nodes")[1]
-	for i, node in enumerate(nodes):
-		node.setName(prefix + str(i), unique_name=True)
+	if prefix != '':
+		for i, node in enumerate(nodes):
+			node.setName(prefix + str(i), unique_name=True)
+
+def linkCaptures(nodes):
+	if len(nodes) != 0:
+		for node in nodes:
+			i = node.name().split("_")[-1]
+			expr = { 	'ccrtopcapx' : 'ch("../0_bone_' + i + '/ccrtopcapx")',
+						'ccrtopcapy' : 'ch("../0_bone_' + i + '/ccrtopcapy")',
+						'ccrtopcapz' : 'ch("../0_bone_' + i + '/ccrtopcapz")',
+						'ccrbotcapx' : 'ch("../0_bone_' + i + '/ccrbotcapx")',
+						'ccrbotcapy' : 'ch("../0_bone_' + i + '/ccrbotcapy")',
+						'ccrbotcapz' : 'ch("../0_bone_' + i + '/ccrbotcapz")'
+					}
+			node.setParmExpressions(expr)
 
 class MegaLoad():
 	'''

@@ -10,5 +10,6 @@
     <memberTool name="crashRecovery"/>
     <memberTool name="tex_cache"/>
     <memberTool name="rename"/>
+    <memberTool name="link_captures"/>
   </toolshelf>
 </shelfDocument>
