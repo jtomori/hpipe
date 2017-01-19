@@ -12,4 +12,5 @@ import hpipe
 # initialize shot-based variables
 hpipe.initVars()
 """
+import time
 hou.setSessionModuleSource(code)

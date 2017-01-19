@@ -6,6 +6,7 @@ created by Juraj Tomori
 
 import glob, os, json
 import hou
+import toolutils as tu
 
 # shot name template: s010_shotName_fx_cloudSetup_jtomori_v001.hipnc
 # asset name template: fx_cloudRig_jtomori_v001.hipnc
@@ -78,13 +79,15 @@ def getFilesByMask(path, mask):
 	os.chdir(path)
 	lods = [file for file in glob.glob(mask)]
 	return lods
-
+	
+# batch rename incoming nodes (from  selection) by specified prefix and selection order
 def batchRename(nodes):
 	prefix = hou.ui.readInput("name prefix:", buttons=("rename",), title="rename nodes")[1]
 	if prefix != '':
 		for i, node in enumerate(nodes):
 			node.setName(prefix + str(i), unique_name=True)
 
+# a tool for linking capture regions of multiple bone chains to the master one
 def linkCaptures(nodes):
 	if len(nodes) != 0:
 		for node in nodes:
@@ -97,6 +100,19 @@ def linkCaptures(nodes):
 						'ccrbotcapz' : 'ch("../0_bone_' + i + '/ccrbotcapz")'
 					}
 			node.setParmExpressions(expr)
+
+# tool for quick and easy creating of viewport flipbooks, to be implemented later.., watermark can be done maybe with hwatermark or something, settings does not have an option for that
+def flipBooker():
+	viewer = tu.sceneViewer()
+	settings = viewer.flipbookSettings().stash()
+
+	path = hou.getenv("HIP") + "/prev/" + hou.getenv("VER") + "/"
+	if not os.path.isdir(path):
+		os.makedirs(path)
+	path = path + "out_$F4.jpg"
+	settings.output(path)
+
+	viewer.flipbook(settings=settings)
 
 class MegaLoad():
 	'''
