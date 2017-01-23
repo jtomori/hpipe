@@ -4,7 +4,7 @@ base for houdini pipeline
 created by Juraj Tomori
 '''
 
-import glob, os, json
+import glob, os, json, subprocess
 import hou
 import toolutils as tu
 
@@ -114,10 +114,110 @@ def flipBooker():
 
 	viewer.flipbook(settings=settings)
 
+# class for custom Royal Renderfarm submitter
+# reload(hou.session.hpipe); rr = hou.session.hpipe.RR(); rr.renderIfdSubmit()
+
+class RR():
+	# init default variables
+	def __init__(self):
+		self.rr_root = os.environ['RR_ROOT'] + "\\bin\\win64\\"
+		self.rr_file = hou.hipFile.path()
+		self.rr_env = 'OverrideRREnvFile=1~<CompanyProjectRootFolder>00_pipeline\\houdini\\renderfarm.rrEnv'
+		self.rr_ui = ["", ""]
+		#self.rr_ui = ['UIStyle=1~violaUI', "-violaUI"]
+
+	# construct command for submitting to RR
+	def submitToRR(self, file=None, env=None, mem=4, priority=50, maxClients=500, ui=None, rrControl=False, rrSubmitter=False, dry=False):
+		quot = "\""
+		params = []
+		
+		# assign defaults if not specified
+		if file == None:
+			file = self.rr_file
+		if env == None:
+			env = self.rr_env
+		if ui == None:
+			ui = self.rr_ui
+		
+		params.append(quot + file + quot)
+		params.append(quot + env + quot)
+		params.append(quot + '-Software Houdini' + quot)
+		params.append(quot + 'RenderPreviewFirst=1~0' + quot)
+		params.append(quot + 'PPCreateSmallVideo=1~0' + quot)
+		params.append(quot + 'PPSequenceCheck=1~0' + quot)
+		params.append(quot + 'RequiredMemory=1~' + str(mem) + quot)
+		params.append(quot + 'Priority=1~' + str(priority) + quot)
+		params.append(quot + 'MaxClientsAtATime=1~' + str(maxClients) + quot)
+		#params.append(quot + 'Layer=/out/mantra3' + quot) ---- not picking
+		#params.append(quot + 'SequenceDivide=1~1' + quot) ---- not having an effect in UI
+		if ui != ["", ""]:
+			params.append(quot + ui[0] + quot)
+		
+		# flatten parameters
+		params = " ".join(params)
+
+		# submit
+		if not rrSubmitter:
+			cmd = self.rr_root + "rrSubmitterconsole.exe " + params
+		else:
+			cmd = self.rr_root + "rrSubmitter.exe " + params
+		
+		if not dry:
+			subprocess.Popen(cmd)
+		
+		# debug
+		print "command to sent to RR: "
+		print cmd
+		print
+
+		# show scheduler, if used together with renderIfdSubmit(), then not recommended, because it will be called per every node
+		if rrControl:
+			subprocess.Popen(self.rr_root + "rrControl.exe self.rr_ui[1]")# show scheduler
+
+	# generate IFDs and sent to RR
+	def renderIfdSubmit(self, me, background=True, rrControl=True):
+		# get input nodes
+		nodes = me.inputAncestors()
+		paths = []
+
+		# keep only mantra nodes
+		nodesNew = []
+		for node in nodes:
+			if node.type() == hou.nodeType(hou.ropNodeTypeCategory(), "ifd"):
+				nodesNew.append(node)
+		nodes = nodesNew
+
+		# enable IFD saving parameter and save path to list
+		for node in nodes:
+			node.parm("soho_outputmode").set(1)
+			paths.append(node.evalParm("soho_diskfile"))
+
+		# execute in background / normal
+		if background:
+			hou.hipFile.save()
+			for node in nodes:
+				node.parm("executebackground").pressButton()
+		else:
+			for node in nodes:
+				node.render()
+		
+		# get parameters from the node
+		mem = me.evalParm("mem")
+		priority = me.evalParm("priority")
+		maxClients = me.evalParm("maxClients")
+		rrSubmitter = me.evalParm("rrSubmitter")
+		dry = me.evalParm("dry")
+
+		# disable IFD generation parameter and send to RR
+		for i, node in enumerate(nodes):
+			node.parm("soho_outputmode").set(0)
+			self.submitToRR(file=paths[i], mem=mem, priority=priority, maxClients=maxClients, rrSubmitter=rrSubmitter, dry=dry)
+
+		if rrControl:
+			subprocess.Popen(self.rr_root + "rrControl.exe self.rr_ui[1]")
+
+# class for handling Megascans assets
 class MegaLoad():
-	'''
-	class for handling Megascans assets
-	'''
 	megaPath = hou.getenv("MEGASCANS3D")
 	megaHierarchyFile = megaPath + "index.json"
 

@@ -24,13 +24,6 @@ set "MEGASCANS3D=%MEGASCANS%3d/"
 set "MEGASCANS=%MEGASCANS:\=/%"
 set "MEGASCANS3D=%MEGASCANS3D:\=/%"
 
-rem create temp dir for houdini user if it does not exist, also convert to forwardslashes
-set "TMP=%HOUDINI_TEMP_DIR%"
-set "TMP=%TMP:/=\%"
-IF not exist %TMP% (mkdir %TMP%)
-
 rem run Houdini
 set "HOUDINI_DIR=C:\Program Files\Side Effects Software\%HOUDINI_VERSION%\bin"
 set "PATH=%HOUDINI_DIR%;%PATH%"
-cd ../../
-start houdinifx
