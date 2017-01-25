@@ -116,7 +116,6 @@ def flipBooker():
 
 # class for custom Royal Renderfarm submitter
 # reload(hou.session.hpipe); rr = hou.session.hpipe.RR(); rr.renderIfdSubmit()
-
 class RR():
 	# init default variables
 	def __init__(self):
@@ -124,10 +123,10 @@ class RR():
 		self.rr_file = hou.hipFile.path()
 		self.rr_env = 'OverrideRREnvFile=1~<CompanyProjectRootFolder>00_pipeline\\houdini\\renderfarm.rrEnv'
 		self.rr_ui = ["", ""]
-		#self.rr_ui = ['UIStyle=1~violaUI', "-violaUI"]
+		self.rr_ui = ['UIStyle=1~violaUI', "-violaUI"]
 
 	# construct command for submitting to RR
-	def submitToRR(self, file=None, env=None, mem=4, priority=50, maxClients=500, ui=None, rrControl=False, rrSubmitter=False, dry=False):
+	def submitToRR(self, file=None, env=None, mem=4, priority=50, maxClients=500, ui=None, rrSubmitter=False, dry=False, log=False):
 		quot = "\""
 		params = []
 		
@@ -152,6 +151,9 @@ class RR():
 		#params.append(quot + 'SequenceDivide=1~1' + quot) ---- not having an effect in UI
 		if ui != ["", ""]:
 			params.append(quot + ui[0] + quot)
+		# add only if called from python, do not append in case of hscript (different out format)
+		if log:
+			params.append(" >> //bigfoot/jellyfish/00_pipeline/houdini/renderfarm.log")
 		
 		# flatten parameters
 		params = " ".join(params)
@@ -163,22 +165,27 @@ class RR():
 			cmd = self.rr_root + "rrSubmitter.exe " + params
 		
 		if not dry:
-			subprocess.Popen(cmd)
+			#subprocess.Popen(cmd)
+			os.system(cmd)
 		
 		# debug
 		print "command to sent to RR: "
-		print cmd
-		print
+		print cmd + "\n"
 
-		# show scheduler, if used together with renderIfdSubmit(), then not recommended, because it will be called per every node
-		if rrControl:
-			subprocess.Popen(self.rr_root + "rrControl.exe self.rr_ui[1]")# show scheduler
+		return cmd
 
 	# generate IFDs and sent to RR
 	def renderIfdSubmit(self, me, background=True, rrControl=True):
 		# get input nodes
 		nodes = me.inputAncestors()
 		paths = []
+
+		# get parameters from the node
+		mem = me.evalParm("mem")
+		priority = me.evalParm("priority")
+		maxClients = me.evalParm("maxClients")
+		rrSubmitter = me.evalParm("rrSubmitter")
+		dry = me.evalParm("dry")
 
 		# keep only mantra nodes
 		nodesNew = []
@@ -187,34 +194,47 @@ class RR():
 				nodesNew.append(node)
 		nodes = nodesNew
 
-		# enable IFD saving parameter and save path to list
+		# enable IFD saving parameter, derive ifd path from image path and save path to list
 		for node in nodes:
+			pathImg = node.parm("vm_picture").unexpandedString()
+			pathImg = pathImg.split("/")
+			pathImg.insert(len(pathImg)-1, "ifd")
+			pathImg = "/".join(pathImg)
+			pathImg = pathImg.split(".")
+			pathImg[-1] = "ifd"
+			pathImg = ".".join(pathImg)
+			node.parm("soho_diskfile").set(pathImg)
 			node.parm("soho_outputmode").set(1)
-			paths.append(node.evalParm("soho_diskfile"))
+			firstFrame = node.evalParm("f1")
+			pathCurrent = node.parm("soho_diskfile").evalAtFrame(firstFrame)
+			paths.append(pathCurrent)
+			# enable and set post render script
+			if background:
+				script = self.submitToRR(file=pathCurrent, mem=mem, priority=priority, maxClients=maxClients, rrSubmitter=False, dry=True)
+				script = "unix \'" + script.replace("\\", "/") + " >>& //bigfoot/jellyfish/00_pipeline/houdini/renderfarm.log\'"
+				node.setParms({"tpostrender": 1, "lpostrender": "hscript", "postrender": script})
 
 		# execute in background / normal
-		if background:
-			hou.hipFile.save()
-			for node in nodes:
-				node.parm("executebackground").pressButton()
-		else:
-			for node in nodes:
-				node.render()
+		if not dry:
+			if background:
+				hou.hipFile.save()
+				for node in nodes:
+					node.parm("executebackground").pressButton()
+			else:
+				for node in nodes:
+					node.render()
 		
-		# get parameters from the node
-		mem = me.evalParm("mem")
-		priority = me.evalParm("priority")
-		maxClients = me.evalParm("maxClients")
-		rrSubmitter = me.evalParm("rrSubmitter")
-		dry = me.evalParm("dry")
-
-		# disable IFD generation parameter and send to RR
+		# disable IFD generation parameter and send to RR if not background
 		for i, node in enumerate(nodes):
 			node.parm("soho_outputmode").set(0)
-			self.submitToRR(file=paths[i], mem=mem, priority=priority, maxClients=maxClients, rrSubmitter=rrSubmitter, dry=dry)
+			if not background:
+				self.submitToRR(file=paths[i], mem=mem, priority=priority, maxClients=maxClients, rrSubmitter=rrSubmitter, dry=dry, log=True)
+			else:
+				node.setParms({"tpostrender": 0})
 
+		# run rrControl
 		if rrControl:
-			subprocess.Popen(self.rr_root + "rrControl.exe self.rr_ui[1]")
+			subprocess.Popen(self.rr_root + "rrControl.exe " + self.rr_ui[1])
 
 # class for handling Megascans assets
 class MegaLoad():
