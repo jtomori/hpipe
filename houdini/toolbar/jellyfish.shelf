@@ -11,5 +11,7 @@
     <memberTool name="tex_cache"/>
     <memberTool name="rename"/>
     <memberTool name="link_captures"/>
+    <memberTool name="ratConvert"/>
+    <memberTool name="rat replace"/>
   </toolshelf>
 </shelfDocument>

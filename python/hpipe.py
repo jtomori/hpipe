@@ -114,7 +114,67 @@ def flipBooker():
 
 	viewer.flipbook(settings=settings)
 
+# tool for batch RAT conversion
+# reload(hou.session.hpipe); hou.session.hpipe.batchRATConvert()
+def batchRATConvert():
+	import multiprocessing as multi
+	from Queue import Queue, deque
+	from threading import Thread
+
+	img = [".jpg", ".jpeg", ".tga", ".exr", ".tif", ".tiff", ".png", ".bmp", ".gif", ".ppm", ".hdr"]
+	root = hou.getenv("ROOT")
+	root = "F:/05_user/jtomori/rnd/batch_rat_converter/"
+	path = hou.ui.selectFile(start_directory=root, title="Select a folder with textures for conversion", collapse_sequences=False, file_type=hou.fileType.Image, chooser_mode=hou.fileChooserMode.Read)
+	textures = []
+	
+	for root, dirs, files in os.walk(path):
+		for file in files:
+			if file.endswith(tuple(img)):
+				textures.append(os.path.join(root, file).replace("\\","/"))
+	
+	proceed = not hou.ui.displayMessage(str(len(textures)) + " textures found, proceed?", buttons=("Yes", "No"), title="Proceed?" )
+
+	if proceed:
+		threads = multi.cpu_count() - 1
+
+		# define function which will be executed in parallel
+		def convert(q):
+			while True:
+				texture = q.get()
+				textureRAT = texture.split(".")
+				textureRAT[-1] = "rat"
+				textureRAT = ".".join(textureRAT)
+				cmd = "iconvert \"" + texture + "\" \"" + textureRAT + "\""
+				CREATE_NO_WINDOW = 0x08000000
+				subprocess.call(cmd, creationflags=CREATE_NO_WINDOW)
+				q.task_done()
+
+		# convert list to a queue
+		texturesQ = Queue(maxsize=0)
+		for x in xrange(len(textures)):
+			texturesQ.put(textures[x])
+
+		# spawn threads with convert function
+		for i in range(threads):
+			worker = Thread(target=convert, args=(texturesQ,))
+			worker.setDaemon(True)
+			worker.start()
+
+		# wait until all threads are done
+		texturesQ.join()
+		hou.ui.displayMessage("Texture conversion done.", title="Done")
+
+# replaces image extensions for rat in SHOP nodes in given network
+def batchRATReplace():
+	img = ["jpg", "jpeg", "tga", "exr", "tif", "tiff", "png", "bmp", "gif", "ppm", "hdr"]
+	root = hou.ui.selectNode(node_type_filter=hou.nodeTypeFilter.Shop)
+	if root and root != "":
+		for ext in img:
+			cmd = "opchange -T SHOP -p " + root + " " + ext + " rat"
+			hou.hscript(cmd)
+
 # class for custom Royal Renderfarm submitter
+# to check foreground, aleksei had some issues f
 # reload(hou.session.hpipe); rr = hou.session.hpipe.RR(); rr.renderIfdSubmit()
 class RR():
 	# init default variables
@@ -143,7 +203,7 @@ class RR():
 		params.append(quot + '-Software Houdini' + quot)
 		params.append(quot + 'RenderPreviewFirst=1~0' + quot)
 		params.append(quot + 'PPCreateSmallVideo=1~0' + quot)
-		params.append(quot + 'PPSequenceCheck=1~0' + quot)
+		params.append(quot + 'PPSequenceCheck=1~1' + quot)
 		params.append(quot + 'RequiredMemory=1~' + str(mem) + quot)
 		params.append(quot + 'Priority=1~' + str(priority) + quot)
 		params.append(quot + 'MaxClientsAtATime=1~' + str(maxClients) + quot)

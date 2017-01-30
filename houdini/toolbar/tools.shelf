@@ -24,4 +24,12 @@
   <tool name="link_captures" label="link captures" icon="PLASMA_App">
     <script scriptType="python"><![CDATA[hou.session.hpipe.linkCaptures(hou.selectedNodes())]]></script>
   </tool>
+
+  <tool name="rat replace" label=".rat replace" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[hou.session.hpipe.batchRATReplace()]]></script>
+  </tool>
+
+  <tool name="ratConvert" label=".rat convert" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[hou.session.hpipe.batchRATConvert()]]></script>
+  </tool>
 </shelfDocument>
