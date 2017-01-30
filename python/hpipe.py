@@ -129,7 +129,7 @@ def batchRATConvert():
 	
 	for root, dirs, files in os.walk(path):
 		for file in files:
-			if file.endswith(tuple(img)):
+			if file.lower().endswith(tuple(img)):
 				textures.append(os.path.join(root, file).replace("\\","/"))
 	
 	proceed = not hou.ui.displayMessage(str(len(textures)) + " textures found, proceed?", buttons=("Yes", "No"), title="Proceed?" )
@@ -166,11 +166,13 @@ def batchRATConvert():
 
 # replaces image extensions for rat in SHOP nodes in given network
 def batchRATReplace():
-	img = ["jpg", "jpeg", "tga", "exr", "tif", "tiff", "png", "bmp", "gif", "ppm", "hdr"]
+	img = [".jpg", ".jpeg", ".tga", ".exr", ".tif", ".tiff", ".png", ".bmp", ".gif", ".ppm", ".hdr"]
 	root = hou.ui.selectNode(node_type_filter=hou.nodeTypeFilter.Shop)
 	if root and root != "":
 		for ext in img:
 			cmd = "opchange -T SHOP -p " + root + " " + ext + " rat"
+			hou.hscript(cmd)
+			cmd = "opchange -T SHOP -p " + root + " " + ext.upper() + " rat"
 			hou.hscript(cmd)
 
 # class for custom Royal Renderfarm submitter
