@@ -118,12 +118,11 @@ def flipBooker():
 # reload(hou.session.hpipe); hou.session.hpipe.batchRATConvert()
 def batchRATConvert():
 	import multiprocessing as multi
-	from Queue import Queue, deque
+	from Queue import Queue
 	from threading import Thread
 
 	img = [".jpg", ".jpeg", ".tga", ".exr", ".tif", ".tiff", ".png", ".bmp", ".gif", ".ppm", ".hdr"]
 	root = hou.getenv("ROOT")
-	root = "F:/05_user/jtomori/rnd/batch_rat_converter/"
 	path = hou.ui.selectFile(start_directory=root, title="Select a folder with textures for conversion", collapse_sequences=False, file_type=hou.fileType.Image, chooser_mode=hou.fileChooserMode.Read)
 	textures = []
 	
@@ -166,7 +165,7 @@ def batchRATConvert():
 
 # replaces image extensions for rat in SHOP nodes in given network
 def batchRATReplace():
-	img = [".jpg", ".jpeg", ".tga", ".exr", ".tif", ".tiff", ".png", ".bmp", ".gif", ".ppm", ".hdr"]
+	img = ["jpg", "jpeg", "tga", "exr", "tif", "tiff", "png", "bmp", "gif", "ppm", "hdr"]
 	root = hou.ui.selectNode(node_type_filter=hou.nodeTypeFilter.Shop)
 	if root and root != "":
 		for ext in img:
@@ -176,7 +175,6 @@ def batchRATReplace():
 			hou.hscript(cmd)
 
 # class for custom Royal Renderfarm submitter
-# to check foreground, aleksei had some issues f
 # reload(hou.session.hpipe); rr = hou.session.hpipe.RR(); rr.renderIfdSubmit()
 class RR():
 	# init default variables
@@ -260,7 +258,8 @@ class RR():
 		for node in nodes:
 			pathImg = node.parm("vm_picture").unexpandedString()
 			pathImg = pathImg.split("/")
-			pathImg.insert(len(pathImg)-1, "ifd")
+			#pathImg.insert(len(pathImg)-1, "ifd")
+			pathImg[-2] = pathImg[-2] + "_ifd"
 			pathImg = "/".join(pathImg)
 			pathImg = pathImg.split(".")
 			pathImg[-1] = "ifd"
