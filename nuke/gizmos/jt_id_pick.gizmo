@@ -1,0 +1,39 @@
+#! C:/Program Files/Nuke10.5v1/nuke-10.5.1.dll -nx
+version 10.5 v1
+Gizmo {
+ addUserKnob {20 id_pick l "Id Pick"}
+ addUserKnob {12 pos}
+ pos {733 185}
+ addUserKnob {7 prim}
+ prim {{"\[sample this g pos.x pos.y]"}}
+ addUserKnob {7 obj}
+ obj {{"\[sample this r pos.x pos.y]"}}
+}
+ Input {
+  inputs 0
+  name deep
+  xpos 511
+  ypos -623
+ }
+ DeepToImage {
+  name DeepToImage9
+  xpos 511
+  ypos -555
+ }
+add_layer {other other.BA other.GA other.Op_Id other.Prim_Id other.RA}
+ Shuffle {
+  in other
+  red blue
+  green alpha
+  blue black
+  alpha black
+  name Shuffle
+  xpos 511
+  ypos -486
+ }
+ Output {
+  name out
+  xpos 511
+  ypos -386
+ }
+end_group
