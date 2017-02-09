@@ -114,6 +114,19 @@ def flipBooker():
 
 	viewer.flipbook(settings=settings)
 
+# function to convert image path to path with "deep" suffix, intended for automatic deep id pass setup
+# for example:
+# F:/05_user/jtomori/rnd/deep_ids/ren/img_5.exr -> F:/05_user/jtomori/rnd/deep_ids/ren/img_deep_8.exr
+def deepPath(node):
+	path = node.evalParm("vm_picture")
+	path = path.split(".")
+	pathInner = path[0].split("_")
+	pathInner.insert(len(pathInner)-1, "deep")
+	pathInner = "_".join(pathInner)
+	path[0] = pathInner
+	path = ".".join(path)
+	return path
+
 # tool for batch RAT conversion
 # reload(hou.session.hpipe); hou.session.hpipe.batchRATConvert()
 def batchRATConvert():
@@ -204,11 +217,13 @@ class RR():
 		params.append(quot + 'RenderPreviewFirst=1~0' + quot)
 		params.append(quot + 'PPCreateSmallVideo=1~0' + quot)
 		params.append(quot + 'PPSequenceCheck=1~1' + quot)
+		params.append(quot + 'SeqDivMIN=1~1' + quot)
+		params.append(quot + 'SeqDivMAX=1~2' + quot)
 		params.append(quot + 'RequiredMemory=1~' + str(mem) + quot)
 		params.append(quot + 'Priority=1~' + str(priority) + quot)
 		params.append(quot + 'MaxClientsAtATime=1~' + str(maxClients) + quot)
-		#params.append(quot + 'Layer=/out/mantra3' + quot) ---- not picking
-		#params.append(quot + 'SequenceDivide=1~1' + quot) ---- not having an effect in UI
+		#params.append(quot + 'Layer=/out/mantra3' + quot) ---- not working
+		#params.append(quot + 'seqDivideEnabled=1~0' + quot)
 		if ui != ["", ""]:
 			params.append(quot + ui[0] + quot)
 		# add only if called from python, do not append in case of hscript (different out format)
