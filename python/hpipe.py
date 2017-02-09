@@ -117,15 +117,78 @@ def flipBooker():
 # function to convert image path to path with "deep" suffix, intended for automatic deep id pass setup
 # for example:
 # F:/05_user/jtomori/rnd/deep_ids/ren/img_5.exr -> F:/05_user/jtomori/rnd/deep_ids/ren/img_deep_8.exr
-def deepPath(node):
+def deepPath(node, suffix):
 	path = node.evalParm("vm_picture")
 	path = path.split(".")
 	pathInner = path[0].split("_")
-	pathInner.insert(len(pathInner)-1, "deep")
+	pathInner.insert(len(pathInner)-1, suffix)
 	pathInner = "_".join(pathInner)
 	path[0] = pathInner
 	path = ".".join(path)
 	return path
+
+# tool to convert ROP to generate deep data
+# reload(hou.session.hpipe); hou.session.hpipe.deepConvertROP()
+
+def deepConvertROP(node):
+	new = hou.copyNodesTo((node,), hou.node("/out"))[0]
+	oldName = node.name()
+	new.moveToGoodPosition()
+	new.setName(oldName + "_deep", unique_name=True)
+	new.setColor(hou.Color((0,.2,.8)))
+
+	# disable params
+	planes = new.parm("vm_numaux")
+	planes.revertToDefaults()
+	planes = new.parmsInFolder(("Images", "Extra Image Planes"))
+	for plane in planes:
+		if "quick" in plane.name():
+			plane.revertToDefaults()
+
+	deepParms = {
+		"vm_exportcomponents"	:	"",
+		"sololight" 			:	"",
+		"alights" 				:	"",
+		"forcelights" 			:	"",
+		"excludelights" 		:	"",
+		"vm_reflectlimit" 		:	"",
+		"vm_reflectlimit" 		:	0,
+		"vm_refractlimit" 		:	0,
+		"vm_diffuselimit" 		:	0,
+		"vm_volumelimit" 		:	0
+	}
+	new.setParms(deepParms)
+
+	# add Prim_Id and Obj_Id planes
+	planes = new.parm("vm_numaux")
+	planes.insertMultiParmInstance(0)
+	planes.insertMultiParmInstance(0)
+
+	idPlanes =  {
+		"vm_variable_plane1"	:	"Op_Id",
+		"vm_vextype_plane1"		:	"float",
+		"vm_quantize_plane1"	:	"float",
+		"vm_variable_plane2"	:	"Prim_Id",
+		"vm_vextype_plane2"		:	"float",
+		"vm_quantize_plane2"	:	"float"
+	}
+	new.setParms(idPlanes)
+
+	# enable deep output
+	deepSettings = {
+		"vm_deepresolver"		:	"camera",
+		"vm_dcmpzstorage"		:	"real16",
+		"vm_dcmzbias"			:	0.00025,
+		"vm_dcmofsize"			:	"1"
+	}
+	new.setParms(deepSettings)
+
+	# set image and deep paths
+	deepFile = new.parm("vm_dcmfilename")
+	flatFile = new.parm("vm_picture")
+	oldPath = node.path()
+	deepFile.setExpression("hou.session.hpipe.deepPath(hou.node(\"" + oldPath + "\"), \"deep\")", language=hou.exprLanguage.Python)
+	flatFile.setExpression("hou.session.hpipe.deepPath(hou.node(\"" + oldPath + "\"), \"flat\")", language=hou.exprLanguage.Python)
 
 # tool for batch RAT conversion
 # reload(hou.session.hpipe); hou.session.hpipe.batchRATConvert()
