@@ -129,11 +129,13 @@ def deepPath(node, suffix):
 
 # tool to convert ROP to generate deep data
 # reload(hou.session.hpipe); hou.session.hpipe.deepConvertROP()
-
 def deepConvertROP(node):
 	new = hou.copyNodesTo((node,), hou.node("/out"))[0]
 	oldName = node.name()
-	new.moveToGoodPosition()
+	oldPos = node.position()
+	#new.moveToGoodPosition()
+	oldPos += hou.Vector2((1,1))
+	new.setPosition(oldPos)
 	new.setName(oldName + "_deep", unique_name=True)
 	new.setColor(hou.Color((0,.2,.8)))
 
@@ -174,7 +176,10 @@ def deepConvertROP(node):
 	}
 	new.setParms(idPlanes)
 
-	# enable deep output
+	# add deep params, enable deep output
+	cmd = "opproperty -f " + new.path() + " mantra* *dcm*"
+	hou.hscript(cmd)
+
 	deepSettings = {
 		"vm_deepresolver"		:	"camera",
 		"vm_dcmpzstorage"		:	"real16",
