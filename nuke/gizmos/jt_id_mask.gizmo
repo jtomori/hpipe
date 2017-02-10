@@ -1,67 +1,98 @@
 #! C:/Program Files/Nuke10.5v1/nuke-10.5.1.dll -nx
 version 10.5 v1
 Gizmo {
- addUserKnob {20 id_mask l "Id Mask"}
- addUserKnob {41 switch l "obj / prim" T NoOp.switch}
- addUserKnob {41 prim T NoOp.prim}
- addUserKnob {41 obj T NoOp.obj}
+ addUserKnob {20 User l id_mask}
+ addUserKnob {6 pick_1 l pick +STARTLINE}
+ pick_1 true
+ addUserKnob {41 pick T Expression_key_both.pick}
+ addUserKnob {4 mode M {both obj prim}}
+ mode obj
 }
  Input {
   inputs 0
-  name deep
-  xpos 595
-  ypos -363
- }
- NoOp {
-  name NoOp
-  xpos 595
-  ypos -282
-  addUserKnob {20 User l settings}
-  addUserKnob {6 switch +STARTLINE}
-  addUserKnob {3 obj}
-  obj 1395
-  addUserKnob {3 prim}
-  prim 1763
+  name id
+  xpos 632
+  ypos -381
  }
 add_layer {other other.BA other.GA other.Op_Id other.Prim_Id other.RA}
- DeepExpression {
-  chans1 {-other.BA -other.GA other.Op_Id other.Prim_Id}
-  other.Op_Id "rint(other.Op_Id / rgba.alpha)"
-  other.Prim_Id "rint(other.Prim_Id / rgba.alpha)"
-  name DeepExpression_unpremult
-  xpos 595
-  ypos -203
+ Expression {
+  expr0 other.Op_Id+1
+  expr1 other.Prim_Id+1
+  channel2 {-other.BA -other.GA other.Op_Id other.Prim_Id}
+  name Expression_shuffle
+  xpos 632
+  ypos -275
  }
- DeepExpression {
-  temp_name0 obj
-  temp_expr0 "\[value parent.obj]"
-  temp_name1 prim
-  temp_expr1 "\[value parent.prim]"
-  chans1 {-other.BA -other.GA other.Op_Id other.Prim_Id}
-  rgba.red "\[value obj_prim] == 1 ? (other.Op_Id == obj ? rgba.alpha : 0) : (other.Prim_Id == prim ? rgba.alpha : 0)"
-  name DeepExpression_isolate
-  xpos 595
-  ypos -125
+set N915b0800 [stack 0]
+push $N915b0800
+ Expression {
+  temp_name0 pick
+  temp_expr0 "\[value pick]"
+  expr0 "(g == pick.g) ? 1 : 0"
+  name Expression_key_g
+  xpos 984
+  ypos -20
   addUserKnob {20 User}
-  addUserKnob {3 obj_prim l "obj / prim"}
-  obj_prim {{parent.switch}}
+  addUserKnob {18 pick}
+  pick {{parent.Expression_key_both.pick} {parent.Expression_key_both.pick} {parent.Expression_key_both.pick}}
+  addUserKnob {6 pick_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
  }
- DeepToImage {
-  name DeepToImage
-  xpos 595
-  ypos -48
+push $N915b0800
+ Expression {
+  temp_name0 pick
+  temp_expr0 "\[value pick]"
+  expr0 "(r == pick.r) ? 1 : 0"
+  name Expression_key_r
+  xpos 850
+  ypos -22
+  addUserKnob {20 User}
+  addUserKnob {18 pick}
+  pick {{parent.Expression_key_both.pick} {parent.Expression_key_both.pick} {parent.Expression_key_both.pick}}
+  addUserKnob {6 pick_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ }
+push $N915b0800
+ Expression {
+  temp_name0 pick
+  temp_expr0 "\[value pick]"
+  expr0 "(r == pick.r) && (g == pick.g) ? 1 : 0"
+  name Expression_key_both
+  xpos 720
+  ypos -100
+  addUserKnob {20 User}
+  addUserKnob {18 pick}
+  pick {76973 1 0}
+  addUserKnob {6 pick_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ }
+ Switch {
+  inputs 3
+  which {{parent.mode}}
+  name Switch_mode
+  xpos 720
+  ypos 68
  }
  Shuffle {
   green red
   blue red
   alpha red
-  name Shuffle
-  xpos 595
-  ypos 12
+  name Shuffle3
+  xpos 720
+  ypos 190
+ }
+ Reformat {
+  name Reformat1
+  xpos 720
+  ypos 255
+ }
+ Switch {
+  inputs 2
+  which {{parent.pick_1}}
+  name Switch1
+  xpos 632
+  ypos 372
  }
  Output {
-  name mask
-  xpos 595
-  ypos 151
+  name Output1
+  xpos 632
+  ypos 470
  }
 end_group

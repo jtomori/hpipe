@@ -117,8 +117,11 @@ def flipBooker():
 # function to convert image path to path with "deep" suffix, intended for automatic deep id pass setup
 # for example:
 # F:/05_user/jtomori/rnd/deep_ids/ren/img_5.exr -> F:/05_user/jtomori/rnd/deep_ids/ren/img_deep_8.exr
-def deepPath(node, suffix):
-	path = node.evalParm("vm_picture")
+def idPath(node, suffix, src="img"):
+	if src == "img":
+		path = node.evalParm("vm_picture")
+	elif src == "ifd":
+		path = node.evalParm("soho_diskfile")
 	path = path.split(".")
 	pathInner = path[0].split("_")
 	pathInner.insert(len(pathInner)-1, suffix)
@@ -127,16 +130,27 @@ def deepPath(node, suffix):
 	path = ".".join(path)
 	return path
 
-# tool to convert ROP to generate deep data
-# reload(hou.session.hpipe); hou.session.hpipe.deepConvertROP()
-def deepConvertROP(node):
+# function to convert image path to IFD path
+def ifdPath(pathImg):
+	pathImg = pathImg.split("/")
+	#pathImg.insert(len(pathImg)-1, "ifd")
+	pathImg[-2] = pathImg[-2] + "_ifd"
+	pathImg = "/".join(pathImg)
+	pathImg = pathImg.split(".")
+	pathImg[-1] = "ifd"
+	pathImg = ".".join(pathImg)
+	return pathImg
+
+# tool to convert ROP to generate id pass
+# reload(hou.session.hpipe); hou.session.hpipe.idConvertROP()
+def idConvertROP(node):
 	new = hou.copyNodesTo((node,), hou.node("/out"))[0]
 	oldName = node.name()
 	oldPos = node.position()
 	#new.moveToGoodPosition()
 	oldPos += hou.Vector2((1,1))
 	new.setPosition(oldPos)
-	new.setName(oldName + "_deep", unique_name=True)
+	new.setName(oldName + "_id", unique_name=True)
 	new.setColor(hou.Color((0,.2,.8)))
 
 	# disable params
@@ -147,7 +161,7 @@ def deepConvertROP(node):
 		if "quick" in plane.name():
 			plane.revertToDefaults()
 
-	deepParms = {
+	idParms = {
 		"vm_exportcomponents"	:	"",
 		"sololight" 			:	"",
 		"alights" 				:	"",
@@ -157,9 +171,11 @@ def deepConvertROP(node):
 		"vm_reflectlimit" 		:	0,
 		"vm_refractlimit" 		:	0,
 		"vm_diffuselimit" 		:	0,
-		"vm_volumelimit" 		:	0
+		"vm_volumelimit" 		:	0,
+		"vm_maxraysamples" 		:	1,
+		"vm_subpixel"			:	1
 	}
-	new.setParms(deepParms)
+	new.setParms(idParms)
 
 	# add Prim_Id and Obj_Id planes
 	planes = new.parm("vm_numaux")
@@ -178,7 +194,7 @@ def deepConvertROP(node):
 
 	# add deep params, enable deep output
 	cmd = "opproperty -f " + new.path() + " mantra* *dcm*"
-	hou.hscript(cmd)
+	#hou.hscript(cmd)
 
 	deepSettings = {
 		"vm_deepresolver"		:	"camera",
@@ -186,14 +202,16 @@ def deepConvertROP(node):
 		"vm_dcmzbias"			:	0.00025,
 		"vm_dcmofsize"			:	"1"
 	}
-	new.setParms(deepSettings)
+	#new.setParms(deepSettings)
 
 	# set image and deep paths
-	deepFile = new.parm("vm_dcmfilename")
+	#deepFile = new.parm("vm_dcmfilename")
 	flatFile = new.parm("vm_picture")
+	ifdFile = new.parm("soho_diskfile")
 	oldPath = node.path()
-	deepFile.setExpression("hou.session.hpipe.deepPath(hou.node(\"" + oldPath + "\"), \"deep\")", language=hou.exprLanguage.Python)
-	flatFile.setExpression("hou.session.hpipe.deepPath(hou.node(\"" + oldPath + "\"), \"flat\")", language=hou.exprLanguage.Python)
+	#deepFile.setExpression("hou.session.hpipe.idPath(hou.node(\"" + oldPath + "\"), \"deep\")", language=hou.exprLanguage.Python)
+	flatFile.setExpression("hou.session.hpipe.idPath(hou.node(\"" + oldPath + "\"), \"id\")", language=hou.exprLanguage.Python)
+	ifdFile.setExpression("hou.session.hpipe.idPath(hou.node(\"" + oldPath + "\"), \"id\", src=\"ifd\" )", language=hou.exprLanguage.Python)
 
 # tool for batch RAT conversion
 # reload(hou.session.hpipe); hou.session.hpipe.batchRATConvert()
@@ -257,6 +275,7 @@ def batchRATReplace():
 
 # class for custom Royal Renderfarm submitter
 # reload(hou.session.hpipe); rr = hou.session.hpipe.RR(); rr.renderIfdSubmit()
+# !!! to check - why I am not using post-render script also on FG render? it should be simpler to code, debug
 class RR():
 	# init default variables
 	def __init__(self):
@@ -287,6 +306,7 @@ class RR():
 		params.append(quot + 'PPSequenceCheck=1~1' + quot)
 		params.append(quot + 'SeqDivMIN=1~1' + quot)
 		params.append(quot + 'SeqDivMAX=1~2' + quot)
+		params.append(quot + 'DefaultClientGroup=1~jellyfish' + quot)
 		params.append(quot + 'RequiredMemory=1~' + str(mem) + quot)
 		params.append(quot + 'Priority=1~' + str(priority) + quot)
 		params.append(quot + 'MaxClientsAtATime=1~' + str(maxClients) + quot)
@@ -339,15 +359,20 @@ class RR():
 
 		# enable IFD saving parameter, derive ifd path from image path and save path to list
 		for node in nodes:
-			pathImg = node.parm("vm_picture").unexpandedString()
-			pathImg = pathImg.split("/")
-			#pathImg.insert(len(pathImg)-1, "ifd")
-			pathImg[-2] = pathImg[-2] + "_ifd"
-			pathImg = "/".join(pathImg)
-			pathImg = pathImg.split(".")
-			pathImg[-1] = "ifd"
-			pathImg = ".".join(pathImg)
-			node.parm("soho_diskfile").set(pathImg)
+			try:
+				pathImg = node.parm("vm_picture").unexpandedString()
+				#pathImg = pathImg.split("/")
+				##pathImg.insert(len(pathImg)-1, "ifd")
+				#pathImg[-2] = pathImg[-2] + "_ifd"
+				#pathImg = "/".join(pathImg)
+				#pathImg = pathImg.split(".")
+				#pathImg[-1] = "ifd"
+				#pathImg = ".".join(pathImg)
+				pathImg = ifdPath(pathImg)
+				node.parm("soho_diskfile").set(pathImg)
+			except:
+				#node.parm("soho_diskfile").setExpression("hou.session.hpipe.idPath(hou.node(\"" + oldPath + "\"), \"deep\", src=\"ifd\" )", language=hou.exprLanguage.Python)
+				pass
 			node.parm("soho_outputmode").set(1)
 			firstFrame = node.evalParm("f1")
 			pathCurrent = node.parm("soho_diskfile").evalAtFrame(firstFrame)

@@ -33,7 +33,7 @@
     <script scriptType="python"><![CDATA[hou.session.hpipe.batchRATConvert()]]></script>
   </tool>
 
-  <tool name="deepROP" label="deep ROP" icon="PLASMA_App">
-    <script scriptType="python"><![CDATA[hou.session.hpipe.deepConvertROP(hou.selectedNodes()[0])]]></script>
+  <tool name="idROP" label="id ROP" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[hou.session.hpipe.idConvertROP(hou.selectedNodes()[0])]]></script>
   </tool>
 </shelfDocument>

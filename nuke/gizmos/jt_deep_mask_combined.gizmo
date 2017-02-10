@@ -1,0 +1,63 @@
+#! C:/Program Files/Nuke10.5v1/nuke-10.5.1.dll -nx
+version 10.5 v1
+Gizmo {
+ addUserKnob {20 id_mask l "Id Mask"}
+ addUserKnob {41 prim T NoOp.prim}
+ addUserKnob {41 obj T NoOp.obj}
+}
+ Input {
+  inputs 0
+  name deep
+  xpos 595
+  ypos -363
+ }
+ NoOp {
+  name NoOp
+  xpos 595
+  ypos -283
+  addUserKnob {20 User l settings}
+  addUserKnob {6 switch +STARTLINE}
+  addUserKnob {3 obj}
+  obj 785
+  addUserKnob {3 prim}
+  prim 11
+ }
+add_layer {other other.BA other.GA other.Op_Id other.Prim_Id other.RA}
+ DeepExpression {
+  chans1 {-other.BA -other.GA other.Op_Id other.Prim_Id}
+  other.Op_Id "rint(other.Op_Id / rgba.alpha)"
+  other.Prim_Id "rint(other.Prim_Id / rgba.alpha)"
+  name DeepExpression_unpremult
+  xpos 595
+  ypos -203
+ }
+ DeepExpression {
+  temp_name0 obj
+  temp_expr0 "\[value parent.obj]"
+  temp_name1 prim
+  temp_expr1 "\[value parent.prim]"
+  chans1 {-other.BA -other.GA other.Op_Id other.Prim_Id}
+  rgba.red "(other.Op_Id == obj)  &&  (other.Prim_Id == prim) ? rgba.alpha : 0"
+  name DeepExpression_isolate
+  xpos 595
+  ypos -125
+ }
+ DeepToImage {
+  name DeepToImage
+  xpos 595
+  ypos -48
+ }
+ Shuffle {
+  green red
+  blue red
+  alpha red
+  name Shuffle
+  xpos 595
+  ypos 12
+ }
+ Output {
+  name mask
+  xpos 595
+  ypos 151
+ }
+end_group

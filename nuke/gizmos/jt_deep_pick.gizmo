@@ -1,0 +1,40 @@
+#! C:/Program Files/Nuke10.5v1/nuke-10.5.1.dll -nx
+version 10.5 v1
+Gizmo {
+ addUserKnob {20 id_pick l "Id Pick"}
+ addUserKnob {12 pos}
+ pos {496 168.5}
+ addUserKnob {26 ""}
+ addUserKnob {3 prim}
+ prim {{"rint(\[sample this g pos.x pos.y])"}}
+ addUserKnob {3 obj}
+ obj {{"rint(\[sample this r pos.x pos.y])"}}
+ addUserKnob {26 ""}
+ addUserKnob {22 create_mask l INVISIBLE +INVISIBLE T "from __future__ import with_statement\n\nprim = nuke.thisNode()\['prim'].value()\nobj = nuke.thisNode()\['obj'].value()\n\nmyRoot = nuke.toNode( 'root' )\nwith myRoot:\n    #new = nuke.createNode(\"jt_id_mask\")\n    new = nuke.nodes.jt_id_mask()\n    new\['prim'].setValue(prim)\n    new\['obj'].setValue(obj)" +STARTLINE}
+}
+ Input {
+  inputs 0
+  name deep
+  xpos 511
+  ypos -623
+ }
+ DeepToImage {
+  name DeepToImage9
+  xpos 511
+  ypos -555
+ }
+ Expression {
+  expr0 other.Op_Id
+  expr1 other.Prim_Id
+  channel2 none
+  name Expression1
+  selected true
+  xpos 511
+  ypos -488
+ }
+ Output {
+  name out
+  xpos 511
+  ypos -386
+ }
+end_group

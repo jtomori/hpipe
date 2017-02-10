@@ -13,6 +13,6 @@
     <memberTool name="link_captures"/>
     <memberTool name="ratConvert"/>
     <memberTool name="rat replace"/>
-    <memberTool name="deepROP"/>
+    <memberTool name="idROP"/>
   </toolshelf>
 </shelfDocument>
