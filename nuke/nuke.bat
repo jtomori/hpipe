@@ -12,3 +12,7 @@ set "HOME=%ROOT%/05_user/%USERNAME%"
 rem run Nuke
 set "NUKE_DIR=C:\Program Files\%NUKE_VERSION%\"
 set "PATH=%NUKE_DIR%;%PATH%"
+
+set "NUKE_DIR=%NUKE_DIR:\=/%"
+
+set "OPTICAL_FLARES_LICENSE_PATH=%NUKE_DIR%"
