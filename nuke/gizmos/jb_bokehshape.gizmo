@@ -1,0 +1,114 @@
+#! C:/Program Files/Nuke10.5v1/nuke-10.5.1.dll -nx
+version 10.5 v1
+Gizmo {
+ inputs 0
+}
+ Constant {
+  inputs 0
+  channels rgb
+  format "1024 1024 0 0 1024 1024 1 square_1K"
+  name Constant1
+  xpos 501
+  ypos -229
+ }
+ Roto {
+  curves {{{v x3f99999a}
+  {f 0}
+  {n
+   {layer Root
+    {f 2097152}
+    {t x44700000 x44070000}
+    {a pt1x 0 pt1y 0 pt2x 0 pt2y 0 pt3x 0 pt3y 0 pt4x 0 pt4y 0 ptex00 0 ptex01 0 ptex02 0 ptex03 0 ptex10 0 ptex11 0 ptex12 0 ptex13 0 ptex20 0 ptex21 0 ptex22 0 ptex23 0 ptex30 0 ptex31 0 ptex32 0 ptex33 0 ptof1x 0 ptof1y 0 ptof2x 0 ptof2y 0 ptof3x 0 ptof3y 0 ptof4x 0 ptof4y 0 pterr 0 ptrefset 0 ptmot x40800000 ptref 0}
+    {curvegroup Ellipse1 512 bezier
+     {{cc
+       {f 8192}
+       {px x42860000
+        {xc30e8b1c 0}
+        {x43fd8002 x41b8f5b0}
+        {x430e8b22 0}
+        {0 xc3877f5d}
+        {x443f4640 x44007331}
+        {0 x43877f5c}
+        {x430e8b22 0}
+        {x43fd8002 x447b1eb5}
+        {xc30e8b1c 0}
+        {0 x43877f5c}
+        {x4378e700 x44007331}
+        {0 xc3877f5d}}}     idem}
+     {tx x42860000 x43f68000 x43f88000}
+     {a osw x41200000 osf 0 str 1 spx x44700000 spy x44070000 sb 1 ltn x42860000 ltm x42860000 tt x40e00000}}}}}}
+  toolbox {selectAll {
+  { selectAll str 1 ssx 1 ssy 1 sf 1 }
+  { createBezier str 1 ssx 1 ssy 1 sf 1 sb 1 tt 4 }
+  { createBezierCusped str 1 ssx 1 ssy 1 sf 1 sb 1 tt 5 }
+  { createBSpline str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { createEllipse str 1 ssx 1 ssy 1 sf 1 sb 1 tt 7 }
+  { createRectangle str 1 ssx 1 ssy 1 sf 1 sb 1 tt 8 }
+  { createRectangleCusped str 1 ssx 1 ssy 1 sf 1 sb 1 tt 9 }
+  { createOpenSpline str 1 ssx 1 ssy 1 sf 1 tt 10 }
+  { brush str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { eraser src 2 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { clone src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { reveal src 3 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { dodge src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { burn src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { blur src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { sharpen src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { smear src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+} }
+  toolbar_brush_hardness 0.200000003
+  toolbar_source_transform_scale {1 1}
+  toolbar_source_transform_center {960 540}
+  colorOverlay {0 0 0 0}
+  lifetime_type "all frames"
+  lifetime_start 67
+  lifetime_end 67
+  motionblur_shutter_offset_type centred
+  source_black_outside true
+  name Roto16
+  xpos 501
+  ypos -145
+ }
+set Nc7c11400 [stack 0]
+push $Nc7c11400
+ Blur {
+  size 100
+  name Blur2
+  xpos 627
+  ypos -151
+ }
+ ColorCorrect {
+  contrast 0.96
+  gamma 1.02
+  offset -0.105
+  name ColorCorrect5
+  xpos 627
+  ypos -97
+ }
+ Invert {
+  name Invert2
+  xpos 627
+  ypos -56
+ }
+ ShuffleCopy {
+  inputs 2
+  name ShuffleCopy1
+  xpos 504
+  ypos -50
+ }
+ Premult {
+  name Premult1
+  xpos 504
+  ypos -24
+ }
+ Clamp {
+  name Clamp2
+  xpos 504
+  ypos 29
+ }
+ Output {
+  name Output1
+  xpos 504
+  ypos 148
+ }
+end_group

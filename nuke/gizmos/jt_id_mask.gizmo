@@ -1,5 +1,5 @@
 #! C:/Program Files/Nuke10.5v1/nuke-10.5.1.dll -nx
-version 10.5 v1
+version 10.0 v5
 Gizmo {
  addUserKnob {20 User l id_mask}
  addUserKnob {6 pick_1 l pick +STARTLINE}
