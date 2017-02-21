@@ -1,0 +1,214 @@
+#! C:/Program Files/Nuke10.5v1/nuke-10.5.1.dll -nx
+version 10.5 v1
+Gizmo {
+ inputs 0
+ addUserKnob {20 BOKEHSHAPE l User}
+ addUserKnob {7 CHROMATIC R 0 50}
+ CHROMATIC 42.6
+}
+ Constant {
+  inputs 0
+  channels rgb
+  format "1024 1024 0 0 1024 1024 1 square_1K"
+  name Constant1
+  xpos 501
+  ypos -229
+ }
+ Roto {
+  curves {{{v x3f99999a}
+  {f 0}
+  {n
+   {layer Root
+    {f 2097664}
+    {t x44700000 x44070000}
+    {a pt1x 0 pt1y 0 pt2x 0 pt2y 0 pt3x 0 pt3y 0 pt4x 0 pt4y 0 ptex00 0 ptex01 0 ptex02 0 ptex03 0 ptex10 0 ptex11 0 ptex12 0 ptex13 0 ptex20 0 ptex21 0 ptex22 0 ptex23 0 ptex30 0 ptex31 0 ptex32 0 ptex33 0 ptof1x 0 ptof1y 0 ptof2x 0 ptof2y 0 ptof3x 0 ptof3y 0 ptof4x 0 ptof4y 0 pterr 0 ptrefset 0 ptmot x40800000 ptref 0}
+    {curvegroup Ellipse1 512 bezier
+     {{cc
+       {f 8192}
+       {px x44836000
+        {xc36920b0 0}
+        {x4400bffc x42afc50c}
+        {x436920ac 0}
+        {0 xc36920b0}
+        {x446a4758 x43fefffd}
+        {0 x436920b0}
+        {x436920ac 0}
+        {x4400bffc x4469075b}
+        {xc36920b0 0}
+        {0 x436920b0}
+        {x42b9c4f4 x43fefffd}
+        {0 xc36920b0}}}
+      {cc
+       {f 8192}
+       {px x44836000
+        {xc36920b0 0}
+        {0 0}
+        {x436920ac 0}
+        {0 xc36920b0}
+        {0 0}
+        {0 x436920b0}
+        {x436920ac 0}
+        {0 0}
+        {xc36920b0 0}
+        {0 x436920b0}
+        {0 0}
+        {0 xc36920b0}}}}
+     {tx x44836000 x4406c000 x43d68000}
+     {a osw x41200000 osf 0 str 1 spx x44700000 spy x44070000 sb 1 ltn x44836000 ltm x44836000 tt x40e00000}}}}}}
+  toolbox {selectAll {
+  { selectAll str 1 ssx 1 ssy 1 sf 1 }
+  { createBezier str 1 ssx 1 ssy 1 sf 1 sb 1 tt 4 }
+  { createBezierCusped str 1 ssx 1 ssy 1 sf 1 sb 1 tt 5 }
+  { createBSpline str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { createEllipse str 1 ssx 1 ssy 1 sf 1 sb 1 tt 7 }
+  { createRectangle str 1 ssx 1 ssy 1 sf 1 sb 1 tt 8 }
+  { createRectangleCusped str 1 ssx 1 ssy 1 sf 1 sb 1 tt 9 }
+  { createOpenSpline str 1 ssx 1 ssy 1 sf 1 tt 10 }
+  { brush str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { eraser src 2 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { clone src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { reveal src 3 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { dodge src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { burn src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { blur src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { sharpen src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+  { smear src 1 str 1 ssx 1 ssy 1 sf 1 sb 1 }
+} }
+  toolbar_brush_hardness 0.200000003
+  toolbar_source_transform_scale {1 1}
+  toolbar_source_transform_center {960 540}
+  colorOverlay {0 0 0 0}
+  lifetime_type "all frames"
+  lifetime_start 1051
+  lifetime_end 1051
+  motionblur_shutter_offset_type centred
+  source_black_outside true
+  name Roto16
+  xpos 501
+  ypos -145
+ }
+ Blur {
+  size 2.7
+  name Blur1
+  xpos 501
+  ypos -119
+ }
+set N7fb3b800 [stack 0]
+push $N7fb3b800
+ Blur {
+  size 292.5
+  name Blur2
+  xpos 627
+  ypos -151
+ }
+ ColorCorrect {
+  contrast 0.96
+  gamma 1.02
+  offset -0.065
+  name ColorCorrect5
+  xpos 627
+  ypos -97
+ }
+ Invert {
+  name Invert2
+  xpos 627
+  ypos -56
+ }
+ ShuffleCopy {
+  inputs 2
+  name ShuffleCopy1
+  xpos 504
+  ypos -50
+ }
+ Noise {
+  output none
+  premult rgb
+  size 2000
+  zoffset 0.3
+  gain 0.71
+  gamma 0.97
+  center {960 540}
+  name Noise1
+  xpos 384
+  ypos -25
+ }
+ Premult {
+  name Premult1
+  xpos 504
+  ypos 18
+ }
+set N7fb3a400 [stack 0]
+ Transform {
+  translate {{parent.CHROMATIC*-1} {curve}}
+  center {960 540}
+  name R
+  xpos 399
+  ypos 71
+ }
+push $N7fb3a400
+ Transform {
+  center {960 540}
+  name G
+  xpos 496
+  ypos 70
+ }
+ ShuffleCopy {
+  inputs 2
+  red red
+  name ShuffleCopy2
+  xpos 425
+  ypos 95
+ }
+push $N7fb3a400
+ Transform {
+  translate {{parent.CHROMATIC} {curve}}
+  center {960 540}
+  name B
+  xpos 601
+  ypos 70
+ }
+ ShuffleCopy {
+  inputs 2
+  red red
+  green green
+  name ShuffleCopy3
+  xpos 504
+  ypos 160
+ }
+ Transform {
+  scale {0.55 1}
+  skewX -0.05
+  skewY 0.09
+  center {512 512}
+  name Transform1
+  xpos 504
+  ypos 199
+ }
+ Blur {
+  size 28
+  name Blur3
+  xpos 504
+  ypos 225
+ }
+ Clamp {
+  name Clamp2
+  xpos 504
+  ypos 311
+ }
+set N7fbb6c00 [stack 0]
+ Output {
+  name Output1
+  xpos 513
+  ypos 354
+ }
+push $N7fb3a400
+push $N7fbb6c00
+ Viewer {
+  inputs 2
+  frame_range 1001-1065
+  input_number 1
+  name Viewer1
+  xpos 705
+  ypos 175
+ }
+end_group

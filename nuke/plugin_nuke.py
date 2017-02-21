@@ -87,6 +87,7 @@ def createThreads(frameStart, frameEnd, numThreads, writeNodes=None):
 	os.environ["frameEnd"]		= str(frameEnd)
 	os.environ["numThreads"]	= str(numThreads)
 
+	os.environ["FN_NUKE_DISABLE_GPU_ACCELERATION"] = str(1)
 
 	# Start
 	setEnvoriment()
