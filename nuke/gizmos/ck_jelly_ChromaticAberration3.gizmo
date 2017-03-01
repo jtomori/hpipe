@@ -1,0 +1,64 @@
+#! C:/Program Files/Nuke10.0v5/nuke-10.0.5.dll -nx
+version 10.0 v5
+Gizmo {
+ inputs 3
+ lock_connections true
+ addUserKnob {20 User}
+ addUserKnob {41 Power T K_Chromatic.Power}
+ addUserKnob {41 MaskSize T K_Chromatic.MaskSize}
+ addUserKnob {41 MaskEdge T K_Chromatic.MaskEdge}
+ addUserKnob {41 R l R> T K_Chromatic.R}
+ addUserKnob {41 G l G> T K_Chromatic.G}
+ addUserKnob {41 B l B> T K_Chromatic.B}
+ addUserKnob {41 subR l R< T K_Chromatic.subR}
+ addUserKnob {41 subG l G< T K_Chromatic.subG}
+ addUserKnob {41 subB l B< T K_Chromatic.subB}
+ addUserKnob {26 Chromatic l "Chromatic aberration"}
+ addUserKnob {41 offv l off T K_Chromatic.offv}
+ addUserKnob {41 offsetR T K_Chromatic.offsetR}
+ addUserKnob {41 offsetG T K_Chromatic.offsetG}
+ addUserKnob {41 offsetB T K_Chromatic.offsetB}
+}
+ Input {
+  inputs 0
+  name bg
+  xpos -366
+  ypos 62
+  number 2
+ }
+ Input {
+  inputs 0
+  name mask
+  xpos -185
+  ypos 73
+  number 1
+ }
+ Input {
+  inputs 0
+  name Input1
+  selected true
+  xpos -11
+  ypos 123
+ }
+ ck_K_Chromatic {
+  inputs 3
+  name K_Chromatic
+  selected false
+  xpos -270
+  ypos 186
+  Power 1.026
+  in forward
+  R 0.14
+  B 1
+  subR -0.33
+  subG -0.575
+  offsetR -2.25
+  offsetG -0.15
+  DepthMap depth
+ }
+ Output {
+  name Output1
+  xpos -260
+  ypos 288
+ }
+end_group

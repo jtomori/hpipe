@@ -1,0 +1,122 @@
+#! C:/Program Files/Nuke10.0v5/nuke-10.0.5.dll -nx
+version 10.0 v5
+Gizmo {
+ addUserKnob {20 "" l Node}
+ addUserKnob {41 lut l "" -STARTLINE T ColorLookup1.lut}
+ addUserKnob {26 "" l " "}
+ addUserKnob {26 hello t "it's true. They said it on Fox news. Amazing network. Amazing people" -STARTLINE T "I'm a badass motherfu**ing gizmo"}
+}
+ Input {
+  inputs 0
+  name Input1
+  xpos -580
+  ypos 364
+ }
+ Dot {
+  name Dot24
+  xpos -546
+  ypos 511
+ }
+set N9b332400 [stack 0]
+push $N9b332400
+ Expression {
+  channel0 rgb
+  expr0 (r+b+g)/3
+  name Expression1
+  xpos -817
+  ypos 507
+ }
+ Invert {
+  name Invert1
+  xpos -817
+  ypos 558
+ }
+ ColorLookup {
+  lut {master {curve C 0.5383084416 x0.152188167 0.5246268511 x0.51323843 0.6614427567 x1 1.00348258}
+    red {}
+    green {}
+    blue {}
+    alpha {}}
+  name ColorLookup1
+  xpos -817
+  ypos 604
+ }
+ Shuffle {
+  alpha red
+  name Shuffle2
+  xpos -817
+  ypos 653
+ }
+ Dot {
+  name Dot33
+  xpos -783
+  ypos 775
+ }
+ Read {
+  inputs 0
+  file //bigfoot/jellyfish/45_footage/grain/VisionColor_1080_23,976_35mm_FilmGrain.mov
+  format "1920 1080 0 0 1920 1080 1 HD_1080"
+  before loop
+  last 73
+  after loop
+  origlast 73
+  origset true
+  colorspace Gamma1.8
+  mov32_codec {{0} "Apple Foto - JPEG (appl - jpeg)"}
+  mov32_pixel_format {{0} "default (YCbCrA 8-bit 444 Biased (r408))" "RGBA  8-bit" "YCbCrA 8-bit 444 (v408)" "YCbCrA 8-bit 444 Biased (r408)" "YCbCr  8-bit 422 (2vuy)"}
+  name Read11
+  xpos -452
+  ypos 449
+ }
+set Nba405800 [stack 0]
+push $Nba405800
+ Blur {
+  size 2000
+  name Blur1
+  xpos -308
+  ypos 541
+ }
+ Merge2 {
+  inputs 2
+  operation minus
+  name Merge_grain
+  xpos -365
+  ypos 616
+ }
+ Grade {
+  add 0.5
+  name Grade2
+  xpos -381
+  ypos 677
+ }
+push $N9b332400
+ MergeExpression {
+  inputs 2+1
+  expr0 B.r<0.5?2*(A.r*B.r):1-2*(1-A.r)*(1-B.r)
+  expr1 B.g<0.5?2*(A.g*B.g):1-2*(1-A.g)*(1-B.g)
+  expr2 B.b<0.5?2*(A.b*B.b):1-2*(1-A.b)*(1-B.b)
+  name Overlay
+  xpos -590
+  ypos 799
+ }
+set N16f46000 [stack 0]
+ Viewer {
+  inputs 2
+  frame 1136
+  frame_range 1001-1166
+  input_number 1
+  colour_sample_bbox {0.4458333254 0.2208333313 0.4479166567 0.2229166627}
+  samplepoints {{0.4458333254 0.2208333313}
+    }
+  name Viewer1
+  xpos -347
+  ypos 782
+ }
+push $N16f46000
+ Output {
+  name Output1
+  selected true
+  xpos -601
+  ypos 991
+ }
+end_group
